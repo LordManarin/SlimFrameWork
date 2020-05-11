@@ -73,6 +73,7 @@ $app->post("/", function(Request $request, Response $response, $args): Response 
     // se der tudo certo, informa esta mensagem
     header("HTTP/1.1 200 CREATED");
     echo json_encode(array("response" => "Tarefa Criada com Sucesso"));
+    return $response;
     });
 
 $app->put("/", function(Request $request, Response $response, $args): Response {
@@ -131,7 +132,9 @@ $app->put("/", function(Request $request, Response $response, $args): Response {
     // caso tudo ocorra bem
     header("HTTP/1.1 201 Sucess");
     echo json_encode(array("response"=>"Tarefa Atualizada"));
+    return $response;
     });
+
 
 $app->delete("/", function(Request $request, Response $response, $args): Response {
     $data = json_decode(file_get_contents("php://input"));
@@ -190,6 +193,7 @@ $app->delete("/", function(Request $request, Response $response, $args): Respons
         header("HTTP/1.1 201 Sucess");
         echo json_encode(array("response" => "Nenhuma tarefa pode ser deletada"));
     }
+    return $response;
 });
 $app->run();
 
