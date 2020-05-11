@@ -16,21 +16,24 @@ $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
 $app->get('/', function (Request $request, Response $response): Response {
-    $params = $request->getQueryParams();
+    $usuarioId = filter_input(INPUT_GET,"usuario_id");
     header("HTTP/1.1 200 ok");
-    $tarefas = new Tarefa();
-    if( $tarefas->find()->Count()>0){
+    if(!$usuarioId){
+        header("HTTP/1.1 201 Sucess");
+        echo json_encode(array("response" => "Nenhuma tarefa localizada"));
+        exit;
+    }else{
+        $usuario = new Tarefa();
         $return = array();
-        foreach ( $tarefas->find()->fetch(true) as  $tarefa){
-            // tratamento de dados
-            array_push($return, $tarefa->data());
+        foreach ($usuario ->find("usuario_id =:usuario_id", "usuario_id=$usuarioId")->fetch(true) as  $usuario ){
+
+            array_push($return, $usuario ->data());
         }
         echo json_encode(array("response"=>$return));
-    }else{
-        echo json_encode(array("response"=>"Sem tarefas cadastradas"));
     }
     return $response;
 });
+
 $app->post("/", function(Request $request, Response $response, $args): Response {
     $data= json_decode(file_get_contents("php://input"));
     // se nao forem enviados dados, vai apresentar esta mensagem de erro
@@ -135,7 +138,6 @@ $app->put("/", function(Request $request, Response $response, $args): Response {
     return $response;
     });
 
-
 $app->delete("/", function(Request $request, Response $response, $args): Response {
     $data = json_decode(file_get_contents("php://input"));
     // se nao forem enviados dados, vai apresentar esta mensagem de erro
@@ -148,15 +150,6 @@ $app->delete("/", function(Request $request, Response $response, $args): Respons
     // testa se todos os campos estao preenchidos
     if (!Validations::validationInteger($data->usuario_id)) {
         array_push($errors, "usuario_id invalido");
-    }
-    if (!Validations::validationsString($data->tarefa)) {
-        array_push($errors, "Tarefa invalido");
-    }
-    if (!Validations::validationsString($data->descricao)) {
-        array_push($errors, "Descrição invalido");
-    }
-    if (!Validations::validationsString($data->concluido)) {
-        array_push($errors, "Estado Invalido");
     }
     if (count($errors) > 0) {
         header("HTTP/1.1 400  BAD REQUEST");
@@ -189,11 +182,12 @@ $app->delete("/", function(Request $request, Response $response, $args): Respons
         header("HTTP/1.1 201 Sucess");
         echo json_encode(array("response" => "Tarefa Deletada"));
     }else{
-        // caso nao dele a tarefa, apresentará este erro
+        // caso nao delete a tarefa, apresentará este erro
         header("HTTP/1.1 201 Sucess");
         echo json_encode(array("response" => "Nenhuma tarefa pode ser deletada"));
     }
     return $response;
 });
+
 $app->run();
 
